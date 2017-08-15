@@ -16,7 +16,8 @@ import java.util.List;
  * Created by sung on 2017/8/14.
  */
 
-public class AppListAdapter extends RecyclerView.Adapter {
+public class AppListAdapter extends RecyclerView.Adapter implements View.OnClickListener,View.OnLongClickListener{
+    private onAppActionListenner onAppActionListenner;
     private List<AppInfo> data = new ArrayList<>();
     private LayoutInflater mInflater;
     private Context context;
@@ -40,8 +41,12 @@ public class AppListAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         AppInfo appInfo = data.get(position);
         AppHolder appHolder = (AppHolder) holder;
+        appHolder.mRootLayout.setTag(position);
         appHolder.mIvIcon.setImageDrawable(appInfo.getIcon());
         appHolder.mTvName.setText(appInfo.getName().trim());
+
+        appHolder.mRootLayout.setOnClickListener(this);
+        appHolder.mRootLayout.setOnLongClickListener(this);
     }
 
     @Override
@@ -60,15 +65,42 @@ public class AppListAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
-    public interface Listenner{
+    @Override
+    public void onClick(View view) {
+        if (onAppActionListenner == null || view.getTag() == null)
+            return;
+
+        int position = (int) view.getTag();
+        onAppActionListenner.onSingleClick(data.get(position).getPackname());
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        if (onAppActionListenner == null || view.getTag() == null)
+            return false;
+
+        int position = (int) view.getTag();
+        onAppActionListenner.onLongClick(data.get(position).getPackname(),position);
+        return true;
+    }
+
+    public void addOnAppActionListenner(onAppActionListenner onAppActionListenner) {
+        this.onAppActionListenner = onAppActionListenner;
+    }
+
+    public interface onAppActionListenner{
+        void onSingleClick(String appPackageName);
+        void onLongClick(String appPackageName, int position);
     }
 
     class AppHolder extends RecyclerView.ViewHolder{
+        public View mRootLayout;
         public ImageView mIvIcon;
         public TextView mTvName;
 
         public AppHolder(View itemView) {
             super(itemView);
+            mRootLayout = itemView;
             mIvIcon = (ImageView) itemView.findViewById(R.id.iv_icon);
             mTvName = (TextView) itemView.findViewById(R.id.tv_name);
         }

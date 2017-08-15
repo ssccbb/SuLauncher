@@ -16,7 +16,8 @@
         android:resumeWhilePausing="true"
         android:taskAffinity=""
         android:enabled="true">
-        <activity android:name=".SuHome" >
+        <activity android:name=".SuHome"
+            android:theme="@style/SuLauncher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

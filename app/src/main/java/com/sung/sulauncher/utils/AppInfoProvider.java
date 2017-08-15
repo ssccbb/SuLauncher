@@ -4,6 +4,7 @@ package com.sung.sulauncher.utils;
  * Created by sung on 2017/8/14.
  */
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import java.util.List;
  * 业务方法，提供手机里面安装的所有的应用程序信息
  */
 public class AppInfoProvider {
+    private static final String TAG = "AppInfoProvider";
 
     /**
      * 获取所有的安装的应用程序信息。
@@ -28,6 +30,10 @@ public class AppInfoProvider {
         List<PackageInfo> packInfos = pm.getInstalledPackages(0);
         List<AppInfo> appInfos = new ArrayList<AppInfo>();
         for(PackageInfo packInfo : packInfos){
+            boolean notActiveApp = NotActiveApp(context, packInfo.packageName);
+            if (notActiveApp)
+                continue;
+
             AppInfo appInfo = new AppInfo();
             //packInfo  相当于一个应用程序apk包的清单文件
             String packname = packInfo.packageName;
@@ -38,18 +44,14 @@ public class AppInfoProvider {
 //          File rcvfile = new File("/proc/uid_stat/"+uid+"/tcp_rcv");
 //          File sndfILE = new File("/proc/uid_stat/"+uid+"/tcp_snd");
             appInfo.setUid(uid);
-            if((flags& ApplicationInfo.FLAG_SYSTEM)==0){
-                //用户程序
+            if((flags& ApplicationInfo.FLAG_SYSTEM)==0){//用户程序
                 appInfo.setUserApp(true);
-            }else{
-                //系统程序
+            }else{//系统程序
                 appInfo.setUserApp(false);
             }
-            if((flags&ApplicationInfo.FLAG_EXTERNAL_STORAGE)==0){
-                //手机的内存
+            if((flags&ApplicationInfo.FLAG_EXTERNAL_STORAGE)==0){//手机的内存
                 appInfo.setInRom(true);
-            }else{
-                //手机外存储设备
+            }else{//手机外存储设备
                 appInfo.setInRom(false);
             }
             appInfo.setPackname(packname);
@@ -60,4 +62,13 @@ public class AppInfoProvider {
         return appInfos;
     }
 
+    /**
+     * 判断app能不能主动启动 否就隐藏
+     * */
+    public static boolean NotActiveApp(Context context, String packageName){
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+        if (intent == null)
+            return true;
+        return false;
+    }
 }
