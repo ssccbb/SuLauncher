@@ -1,8 +1,6 @@
 package com.sung.sulauncher;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -10,9 +8,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
-
 import com.sung.sulauncher.adapter.AppListAdapter;
 import com.sung.sulauncher.model.AppInfo;
+import com.sung.sulauncher.utils.Contants;
 import com.sung.sulauncher.utils.LauncherController;
 import com.sung.sulauncher.utils.AppInfoProvider;
 import java.util.ArrayList;
@@ -20,8 +18,6 @@ import java.util.List;
 
 public class SuHome extends Activity implements AppListAdapter.onAppActionListenner{
     public final static String TAG = "Suhome Launcher";
-    private final static int APP_RULE_DISPLAY_USERS = 0;
-    private final static int APP_RULE_DISPLAY_ALL = 1;
     private List<AppInfo> mAppList;
     private RecyclerView mRcAppList;
 
@@ -50,19 +46,22 @@ public class SuHome extends Activity implements AppListAdapter.onAppActionListen
      * 初始化列表
      * */
     private void ListAppInit(){
-        mRcAppList.setLayoutManager(new GridLayoutManager(getApplicationContext(),4));
+        mRcAppList.setLayoutManager(new GridLayoutManager(getApplicationContext(),Contants.APP_COLUMN_NUM));
         mRcAppList.setItemAnimator(new DefaultItemAnimator());
         AppListAdapter adapter = new AppListAdapter(getApplicationContext(), null);
         adapter.addOnAppActionListenner(this);
         mRcAppList.setAdapter(adapter);
-        adapter.addData(addAppFilterRule(APP_RULE_DISPLAY_ALL),true);
+        adapter.addData(addAppFilterRule(Contants.APP_RULE_DISPLAY_ALL),true);
     }
 
+    /**
+    * 过滤规则
+    * */
     private List<AppInfo> addAppFilterRule(int rule){
         switch (rule){
-            case APP_RULE_DISPLAY_ALL:
+            case Contants.APP_RULE_DISPLAY_ALL:
                 return mAppList;
-            case APP_RULE_DISPLAY_USERS:
+            case Contants.APP_RULE_DISPLAY_USERS:
                 List filterList = new ArrayList();
                 for (AppInfo appInfo : mAppList) {
                     if (appInfo.isUserApp())
@@ -87,6 +86,7 @@ public class SuHome extends Activity implements AppListAdapter.onAppActionListen
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        //屏蔽返回 防止一直切屏
         if (keyCode == KeyEvent.KEYCODE_BACK){
             return true;
         }

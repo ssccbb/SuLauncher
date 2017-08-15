@@ -1,8 +1,5 @@
 package com.sung.sulauncher.utils;
 
-/**
- * Created by sung on 2017/8/14.
- */
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -14,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Created by sung on 2017/8/14.
  * 业务方法，提供手机里面安装的所有的应用程序信息
  */
 public class AppInfoProvider {
@@ -39,10 +37,12 @@ public class AppInfoProvider {
             String packname = packInfo.packageName;
             Drawable icon = packInfo.applicationInfo.loadIcon(pm);
             String name = packInfo.applicationInfo.loadLabel(pm).toString();
-            int flags = packInfo.applicationInfo.flags;                     //应用程序信息的标记 相当于用户提交的答卷
-            int uid = packInfo.applicationInfo.uid;                         //操作系统分配给应用系统的一个固定的编号。一旦应用程序被装到手机 id就固定不变了。
-//          File rcvfile = new File("/proc/uid_stat/"+uid+"/tcp_rcv");
-//          File sndfILE = new File("/proc/uid_stat/"+uid+"/tcp_snd");
+
+            //应用程序信息的标记 相当于用户提交的答卷
+            int flags = packInfo.applicationInfo.flags;
+            //操作系统分配给应用系统的一个固定的编号。一旦应用程序被装到手机 id就固定不变了。
+            int uid = packInfo.applicationInfo.uid;
+
             appInfo.setUid(uid);
             if((flags& ApplicationInfo.FLAG_SYSTEM)==0){//用户程序
                 appInfo.setUserApp(true);
