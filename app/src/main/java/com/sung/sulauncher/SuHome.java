@@ -1,95 +1,68 @@
 package com.sung.sulauncher;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.widget.Toast;
-import com.sung.sulauncher.adapter.AppListAdapter;
-import com.sung.sulauncher.model.AppInfo;
-import com.sung.sulauncher.utils.Contants;
-import com.sung.sulauncher.utils.LauncherController;
-import com.sung.sulauncher.utils.AppInfoProvider;
-import java.util.ArrayList;
-import java.util.List;
 
-public class SuHome extends Activity implements AppListAdapter.onAppActionListenner{
+import com.sung.sulauncher.common.UISwitch;
+import com.sung.sulauncher.ui.AppListFragment;
+import com.sung.sulauncher.ui.IndexFragment;
+
+public class SuHome extends Activity implements UISwitch{
     public final static String TAG = "Suhome Launcher";
-    private List<AppInfo> mAppList;
-    private RecyclerView mRcAppList;
+    private FragmentManager mFragmentManager;
+    private AppListFragment mAppListFragment;
+    private IndexFragment mIndexFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
-
-        initLauncher();
+        init();
+        showIndexFragment();
     }
 
-    /**
-     * 初始化ui，获得applist
-     * */
-    private void initLauncher(){
-        mRcAppList = (RecyclerView) findViewById(R.id.rc_app_list);
-        mAppList = AppInfoProvider.getAppInfos(getApplicationContext());
+    private void init(){
+        mFragmentManager = getFragmentManager();
+        mAppListFragment = AppListFragment.getInstance();
+        mIndexFragment = IndexFragment.getInstance();
+        mAppListFragment.addUISwitchListener(this);
+        mIndexFragment.addUISwitchListener(this);
 
-        ListAppInit();
-        for (AppInfo appInfo : mAppList) {
-            Log.d(TAG, "appinfo:"+appInfo.toString());
-        }
+        mFragmentManager.beginTransaction()
+                .add(R.id.activity_launcher, mAppListFragment,AppListFragment.TAG)
+                .add(R.id.activity_launcher, mIndexFragment,IndexFragment.TAG)
+                .commit();
     }
 
-    /**
-     * 初始化列表
-     * */
-    private void ListAppInit(){
-        mRcAppList.setLayoutManager(new GridLayoutManager(getApplicationContext(),Contants.APP_COLUMN_NUM));
-        mRcAppList.setItemAnimator(new DefaultItemAnimator());
-        AppListAdapter adapter = new AppListAdapter(getApplicationContext(), null);
-        adapter.addOnAppActionListenner(this);
-        mRcAppList.setAdapter(adapter);
-        adapter.addData(addAppFilterRule(Contants.APP_RULE_DISPLAY_ALL),true);
+    private void showAppListFragment(){
+        mFragmentManager.beginTransaction().hide(mIndexFragment).show(mAppListFragment).commit();
     }
 
-    /**
-    * 过滤规则
-    * */
-    private List<AppInfo> addAppFilterRule(int rule){
-        switch (rule){
-            case Contants.APP_RULE_DISPLAY_ALL:
-                return mAppList;
-            case Contants.APP_RULE_DISPLAY_USERS:
-                List filterList = new ArrayList();
-                for (AppInfo appInfo : mAppList) {
-                    if (appInfo.isUserApp())
-                        filterList.add(appInfo);
-                }
-
-                return filterList;
-            default:
-                return mAppList;
-        }
-    }
-
-    @Override
-    public void onSingleClick(String appPackageName) {
-        LauncherController.startApp(getApplicationContext(),appPackageName);
-    }
-
-    @Override
-    public void onLongClick(String appPackageName, int position) {
-        Toast.makeText(this, appPackageName, Toast.LENGTH_SHORT).show();
+    private void showIndexFragment(){
+        mFragmentManager.beginTransaction().hide(mAppListFragment).show(mIndexFragment).commit();
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         //屏蔽返回 防止一直切屏
         if (keyCode == KeyEvent.KEYCODE_BACK){
+            if (!mAppListFragment.isHidden())
+                showIndexFragment();
             return true;
         }
         return super.onKeyDown(keyCode,event);
+    }
+
+    @Override
+    public void showIndex() {
+        showIndexFragment();
+    }
+
+    @Override
+    public void showApplist() {
+        showAppListFragment();
     }
 }
